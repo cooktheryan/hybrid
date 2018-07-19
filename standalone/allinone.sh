@@ -64,15 +64,14 @@ ansible_ssh_user=root
 #410 begin
 openshift_release=v3.10
 openshift_docker_additional_registries=registry.reg-aws.openshift.com:443
-oreg_url=registry.reg-aws.openshift.com:443/openshift3/ose-${component}:${version}
+oreg_url=registry.reg-aws.openshift.com:443/openshift3/ose-\${component}:\${version}
 oreg_auth_user=${auth_user}
 oreg_auth_password=${auth_password}
 openshift_disable_check=memory_availability,disk_availability,docker_image_availability
 #310end
 openshift_use_openshift_sdn=false
 os_sdn_network_plugin_name=cni
-openshift_disable_check=memory_availability
-oreg_url=registry.access.redhat.com/openshift3/ose-\${component}:\${version}
+openshift_disable_check=memory_availability,disk_availability,docker_storage,package_version,docker_image_availability,package_availability
 openshift_examples_modify_imagestreams=true
 openshift_clock_enabled=true
 openshift_enable_service_catalog=false
