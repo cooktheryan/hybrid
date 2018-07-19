@@ -9,15 +9,18 @@ echo "Enter your auth token"
 read -s auth_password
  
 subscription-manager repos --disable="*"
-subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-fast-datapath-rpms" --enable="rhel-7-server-ose-3.9-rpms" --enable="rhel-7-server-ansible-2.4-rpms"
+subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-fast-datapath-rpms" --enable="rhel-7-server-ansible-2.4-rpms"
 yum -y update
-yum -y install wget git net-tools atomic-openshift-utils git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools nodejs qemu-img kexec-tools sos psacct docker-1.13.1 ansible
-yum install -y atomic-openshift-utils
+yum -y install wget git net-tools git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools nodejs qemu-img kexec-tools sos psacct docker-1.13.1 ansible
 yum -y install docker-1.13.1
 yum -y install PyYAML
 yum -y install --enablerepo="epel" jq
 systemctl enable docker
 systemctl start docker
+git clone https://github.com/openshift/openshift-ansible.git /usr/share/ansible/openshift-ansible
+cd /usr/share/ansible/openshift-ansible
+git checkout release-3.10
+cd ~
 
 # Enable what is needed for windows nodes
 yum install -y python-dns
