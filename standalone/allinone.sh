@@ -1,50 +1,13 @@
 #!/bin/bash
-if [ $# -ne 7 ]
-   then echo;echo "allinone.sh ----- HELP ------";echo "allinone arguments required";echo "allinone.sh LinuxHostName WindowsHostName InternalDomain OpenShiftPublicURL AppPublicURL UserName Password";echo "allinone.sh openshift winnode01 ncc9.com openshift.ncc9.com apps.openshift.com glennswest SuperLamb1";exit
-fi
 
-export LinuxHostName=$1
-export WindowsHostName=$2
-export InternalDomain=$3
-export OpenShiftPublicURL=$4
-export AppPublicURL=$5
-export theUserName=$6
-export thePassword=$7
-export theRepo="https://github.com/glennswest/hybrid"
-export AUSERNAME=$theUserName
-export LinuxInternalIP=`nslookup $LinuxHostName | awk '/^Address: / { print $2 ; exit }'`
-export WindowsInternalIP=`nslookup $WindowsHostName | awk '/^Address: / { print $2 ; exit }'`
-
-echo $0 "Starting"
-echo "Linux Hostname:       " $LinuxHostName
-echo "Windows Hostname:     " $WindowsHostName
-echo "Internal Domain:      " $InternalDomain
-echo "Openshift Public URL: " $OpenShiftPublicURL
-echo "App Public URL:       " $AppPublicURL
-echo "User Name:            " $theUserName
-echo "" > ./allinone.vars
-echo "---" >> ./allinone.vars
-echo "LinuxHostName: " $LinuxHostName >> ./allinone.vars
-echo "LinuxInteralIP: " $LinuxInternalIP >> ./allinone.vars
-echo "WindowsHostName: " $WindowsHostName >> ./allinone.vars
-echo "WindowsInternalIP: " $WindowsInternalIP >> ./allinone.vars
-echo "InternalDomain: " $InternalDomain >> ./allinone.vars
-echo "OpenShiftPublicURL: " $InternalDomain >> ./allinone.vars
-echo "AppPublicURL: " $AppPublicURL >> ./allinone.vars
-echo "theUserName: " $theUserName >> ./allinone.vars
-echo "thePassword: " $thePassword >> ./allinone.vars
-echo "theRepo: " $theRepo >> ./allinone.vars
-
-mkdir /etc/ansible
-cp -f ./allinone.vars /etc/ansible
-
-yum install -y dnsmasq
-
-systemctl enable dnsmasq.service
-systemctl start dnsmasq.service
-
-swapoff -a
-
+read -p "Please provide an initial openshift username: " username
+echo "Please provide the password for $username: "
+read -s password
+echo "Enter your email address"
+read -s auth_user
+echo "Enter your auth token"
+read -s auth_password
+ 
 subscription-manager repos --disable="*"
 subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-fast-datapath-rpms" --enable="rhel-7-server-ose-3.9-rpms" --enable="rhel-7-server-ansible-2.4-rpms"
 yum -y update
@@ -65,7 +28,7 @@ pip install pywinrm[kerberos]
 
 
 
-cat <<EOF > /home/${USER}/.ansible.cfg
+cat <<EOF > /home/${AUSERNAME}/.ansible.cfg
 [defaults]
 remote_tmp     = ~/.ansible/tmp
 local_tmp      = ~/.ansible/tmp
@@ -94,6 +57,14 @@ openshift_hosted_manage_router=False
 openshift_hosted_manage_registry=False 
 openshift_hosted_manage_registry_console=False
 ansible_ssh_user=root
+#410 begin
+openshift_release=v3.10
+openshift_docker_additional_registries=registry.reg-aws.openshift.com:443
+oreg_url=registry.reg-aws.openshift.com:443/openshift3/ose-${component}:${version}
+oreg_auth_user=${auth_user}
+oreg_auth_password=${auth_password}
+openshift_disable_check=memory_availability,disk_availability,docker_image_availability
+#310end
 openshift_use_openshift_sdn=false
 os_sdn_network_plugin_name=cni
 openshift_disable_check=memory_availability
@@ -107,7 +78,7 @@ docker_udev_workaround=True
 openshift_node_debug_level="{{ node_debug_level | default(debug_level, true) }}"
 openshift_master_debug_level="{{ master_debug_level | default(debug_level, true) }}"
 openshift_master_access_token_max_seconds=2419200
-openshift_hosted_router_replicas=1
+openshift_hosted_router_replicas=3
 openshift_hosted_registry_replicas=1
 openshift_master_api_port="{{ console_port }}"
 openshift_master_console_port="{{ console_port }}"
@@ -118,25 +89,20 @@ deployment_type=openshift-enterprise
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider', 'filename': '/etc/origin/master/htpasswd'}]
 openshift_master_manage_htpasswd=false
 
-openshift_master_default_subdomain=$AppPublicURL
-openshift_use_dnsmasq=true
-openshift_public_hostname=$OpenShiftPublicURL
+openshift_master_default_subdomain=app.$1
+openshift_public_hostname=$1
 
 [masters]
-$LinuxHostName openshift_host_name=$LinuxHostName openshift_node_labels="{'region': 'infra'}"
+$1 openshift_node_group_name="node-config-master" openshift_hostname=$1
 
 [etcd]
-$LinuxHostName
+$1 openshift_hostname=$1
 
 [new_nodes]
 [new_masters]
 
 [nodes]
-$LinuxHostName
- 
-[windows]
-$WindowsHostName
-
+$1 openshift_hostname=$1
 EOF
 
 cat <<EOF > ~/postinstall.yml
@@ -144,8 +110,8 @@ cat <<EOF > ~/postinstall.yml
 - hosts: masters
   vars:
     description: "auth users"
-    AUSERNAME: $theUserName
-    PASSWORD: $thePassword
+    AUSERNAME: $username
+    PASSWORD: $password
   tasks:
   - name: Create Master Directory
     file: path=/etc/origin/master state=directory
@@ -158,12 +124,9 @@ EOF
 cat <<EOF > ~/openshift-install.sh
 ansible-playbook  /usr/share/ansible/openshift-ansible/playbooks/prerequisites.yml < /dev/null
 ansible-playbook  /usr/share/ansible/openshift-ansible/playbooks/deploy_cluster.yml < /dev/null || true
-ansible-playbook  ~/postinstall.yml
 
 yum -y install atomic-openshift-clients
 EOF
 
-
 chmod +x ~/openshift-install.sh
 ~/openshift-install.sh | tee openshift-install.out
-
