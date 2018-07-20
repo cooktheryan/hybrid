@@ -70,7 +70,7 @@ oreg_auth_password=${auth_password}
 openshift_disable_check=memory_availability,disk_availability,docker_image_availability
 #310end
 openshift_use_openshift_sdn=false
-os_sdn_network_plugin_name=cni
+#os_sdn_network_plugin_name=cni
 openshift_disable_check=memory_availability,disk_availability,docker_storage,package_version,docker_image_availability,package_availability
 openshift_examples_modify_imagestreams=true
 openshift_clock_enabled=true
