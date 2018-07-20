@@ -335,10 +335,10 @@
   - name: Clear old rules
     shell: iptables -t nat -F
 
-  - name: restart atomic-openshift-node
-    service:
-      name: atomic-openshift-node
-      state: restarted
+#  - name: restart atomic-openshift-node
+#    service:
+#      name: atomic-openshift-node
+#      state: restarted
 
 - hosts: nodes[0]
   gather_facts: false
@@ -480,7 +480,7 @@
   gather_facts: no
   tasks:
   - name: Recreate the router
-    shell: oc adm policy add-scc-to-user hostnetwork -z router;oc adm router --selector='region=infra'
+    shell: oc adm policy add-scc-to-user hostnetwork -z router;oc adm router
 
   - name: Recreate the registry
     shell: oc adm registry
