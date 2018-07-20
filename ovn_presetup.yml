@@ -44,7 +44,7 @@
  
   - name: untar 
     unarchive: 
-      src: cni-plugins-amd64-v0.7.1.tgz
+      src: /root/cni-plugins-amd64-v0.7.1.tgz
       dest: /tmp/cniplugin
 
 - hosts: nodes
