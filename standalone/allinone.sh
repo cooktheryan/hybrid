@@ -105,7 +105,7 @@ $1 openshift_hostname=$1
 [new_masters]
 
 [nodes]
-$1 penshift_node_group_name="node-config-master" openshift_hostname=$1
+$1 openshift_node_group_name="node-config-master" openshift_hostname=$1
 EOF
 
 cat <<EOF > ~/postinstall.yml
