@@ -38,8 +38,9 @@
     file: path=/tmp/cniplugin state=directory
 
   - name: Get cni plugins
-    get_url: https://github.com/containernetworking/plugins/releases/download/v0.7.1/cni-plugins-amd64-v0.7.1.tgz
-    dest: /root/cni-plugins-amd64-v0.7.1.tgz
+    get_url: 
+       url: https://github.com/containernetworking/plugins/releases/download/v0.7.1/cni-plugins-amd64-v0.7.1.tgz
+       dest: /root/cni-plugins-amd64-v0.7.1.tgz
  
   - name: untar 
     unarchive: 
