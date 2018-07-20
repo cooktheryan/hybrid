@@ -138,9 +138,9 @@
                  --k8s-cacert "${config_dir}/ca.crt" \
                  --k8s-token "${token}" \
                  --cluster-subnet "${cluster_cidr}" \
-                 --nb-address "tcp://{{lookup('dig',inventory_hostname)}}:6641" \
-                  -sb-address "tcp://{{lookup('dig',inventory_hostname)}}:6642" \
-                  --init-master `hostname` \
+                 --nb-address "tcp://127.0.0.1:6641" \
+                  -sb-address "tcp://127.0.0.1:6642" \
+                  --init-master {{inventory_hostname}} \
                   --service-cluster-ip-range=172.30.0.0/16 \
                   --net-controller
          }
@@ -173,7 +173,7 @@
                  --sb-address "tcp://{{lookup('dig',inventory_hostname)}}:6642" \
                  --init-gateways \
                  --service-cluster-ip-range=172.30.0.0/16 \
-                 --init-node `hostname`  \
+                 --init-node {{inventory_hostname}}  \
                  --gateway-localnet
          }
          ovn-kubernetes-node "{{ config_dir }}"
@@ -197,10 +197,10 @@
          cacert=/etc/origin/master/ca.crt
 
          [ovnnorth]
-         address="tcp://{{lookup('dig',inventory_hostname)}}:6641" # this master machine's IP address
+         address="tcp://127.0.0.1:6641" # this master machine's IP address
 
          [ovnsouth]
-         address="tcp://{{lookup('dig',inventory_hostname)}}:6642"
+         address="tcp://127.0.0.1:6642"
   - name: open firewall 6641
     shell: iptables -A OS_FIREWALL_ALLOW -p tcp -m state --state NEW -m tcp --dport 6641 -j ACCEPT
   - name: open firewall 6642
@@ -427,5 +427,4 @@
     shell: oc adm new-project openshift-web-console --node-selector=''
   - name: Create the New OpenShift Web Console
     shell: oc process -f console-template.yaml -p "API_SERVER_CONFIG=$(cat console-config.yaml)" | oc apply -n openshift-web-console -f -
-
 
