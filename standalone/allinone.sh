@@ -3,13 +3,13 @@
 read -p "Please provide an initial openshift username: " username
 echo "Please provide the password for $username: "
 read -s password
-echo "Enter your email address"
-read -s auth_user
-echo "Enter your auth token"
-read -s auth_password
+#echo "Enter your email address"
+#read -s auth_user
+#echo "Enter your auth token"
+#read -s auth_password
  
 subscription-manager repos --disable="*"
-subscription-manager repos --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-fast-datapath-rpms" --enable="rhel-7-server-ansible-2.4-rpms"
+subscription-manager repos --enable="rhel-7-server-ose-3.9-rpms"  --enable="rhel-7-server-rpms" --enable="rhel-7-server-extras-rpms" --enable="rhel-7-fast-datapath-rpms" --enable="rhel-7-server-ansible-2.4-rpms"
 yum -y update
 yum -y install wget git net-tools git net-tools bind-utils iptables-services bridge-utils bash-completion httpd-tools nodejs qemu-img kexec-tools sos psacct docker-1.13.1 ansible gcc python-setuptools
 yum -y install docker-1.13.1
@@ -20,7 +20,7 @@ systemctl enable docker
 systemctl start docker
 git clone https://github.com/openshift/openshift-ansible.git /usr/share/ansible/openshift-ansible
 cd /usr/share/ansible/openshift-ansible
-git checkout release-3.10
+git checkout release-3.9
 cd ~
 
 # Enable what is needed for windows nodes
@@ -61,14 +61,15 @@ openshift_hosted_manage_router=False
 openshift_hosted_manage_registry=False 
 openshift_hosted_manage_registry_console=False
 ansible_ssh_user=root
-#410 begin
-openshift_release=v3.10
-openshift_docker_additional_registries=registry.reg-aws.openshift.com:443
-oreg_url=registry.reg-aws.openshift.com:443/openshift3/ose-\${component}:\${version}
-oreg_auth_user=${auth_user}
-oreg_auth_password=${auth_password}
-openshift_disable_check=memory_availability,disk_availability,docker_image_availability
+##410 begin
+#openshift_release=v3.9
+#openshift_docker_additional_registries=registry.reg-aws.openshift.com:443
+#oreg_url=registry.reg-aws.openshift.com:443/openshift3/ose-\${component}:\${version}
+#oreg_auth_user=${auth_user}
+#oreg_auth_password=${auth_password}
+#openshift_disable_check=memory_availability,disk_availability,docker_image_availability
 #310end
+oreg_url=registry.access.redhat.com/openshift3/ose-\${component}:\${version}
 openshift_use_openshift_sdn=false
 os_sdn_network_plugin_name=cni
 openshift_disable_check=memory_availability,disk_availability,docker_storage,package_version,docker_image_availability,package_availability
@@ -133,3 +134,4 @@ EOF
 
 chmod +x ~/openshift-install.sh
 ~/openshift-install.sh | tee openshift-install.out
+
