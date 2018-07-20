@@ -1,6 +1,7 @@
 - hosts: localhost
   become: yes
   become_user: root
+  gather_facts: false
   tasks:
   - name: Install go
     yum:
@@ -47,6 +48,7 @@
 
 - hosts: nodes
   become: yes
+  gather_facts: false
   become_user: root
   tasks:
   - name: Create /opt/cni/bin
@@ -85,6 +87,7 @@
 - hosts: nodes
   become: yes
   become_user: root
+  gather_facts: false
   tasks:
   - name: Remove openvswitch packages 
     yum:
@@ -132,6 +135,7 @@
 - hosts: masters
   become: yes
   become_user: root
+  gather_facts: false
   tasks:
   - name: Create destination directory
     file: path=/etc/cni/net.d state=directory
