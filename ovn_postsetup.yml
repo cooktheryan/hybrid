@@ -69,6 +69,11 @@
        dest: /etc/origin/master
        mode: u+rw
 
+  - name: Place Crt 
+    copy:
+       src: /etc/origin/node/node-config.yaml
+       dest: /etc/origin/node/node-config.yaml-bak
+
   - name: Remove old network setup
     shell: cd /etc/origin/node;sed -i.bak '/networkConfig:/,/nodeName:/{//!d}' node-config.yaml
 
